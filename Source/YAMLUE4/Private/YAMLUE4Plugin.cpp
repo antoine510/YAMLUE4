@@ -1,6 +1,4 @@
-#include "YAMLUE4PCH.h"
 #include "YAMLUE4Plugin.h"
-#include <Engine.h>
 
 std::string YAML::detail::node_data::empty_scalar;
 

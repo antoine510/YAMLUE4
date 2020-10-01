@@ -1,7 +1,10 @@
-#include "YAMLUE4PCH.h"
 #include "YAMLUE4.h"
-#include "Core.h"
-#include "ModuleManager.h"
+#include <CoreTypes.h>
+#include <Misc/Paths.h>
+#include <Internationalization/Text.h>
+#include <Modules/ModuleManager.h>
+#include <HAL/PlatformProcess.h>
+#include <Misc/MessageDialog.h>
 
 bool YAMLUE4Module::initialized = false;
 void* YAMLUE4Module::dllHandle = nullptr;

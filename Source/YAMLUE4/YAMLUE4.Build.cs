@@ -12,7 +12,6 @@ public class YAMLUE4 : ModuleRules {
 		PrivateIncludePaths.Add(Path.Combine(ModuleDirectory, "Private"));
 		PublicIncludePaths.Add(Path.Combine(ModuleDirectory, "Public"));
 		PublicDependencyModuleNames.AddRange(new string[] { "Core", "CoreUObject", "Engine"});
-		PrivatePCHHeaderFile = "Private/YAMLUE4PCH.h";
 
 		if (Target.Platform != UnrealTargetPlatform.Win64) {
 			throw new System.Exception("This plugin is only available for Win64 right now.");
@@ -20,14 +19,16 @@ public class YAMLUE4 : ModuleRules {
 
 		PrivateIncludePaths.Add(Path.Combine(yamlcppPath, "include/"));
 		
-		PublicLibraryPaths.Add(Path.Combine(yamlcppPath, "lib/Win64/"));
-		PublicAdditionalLibraries.Add("yaml-cpp.lib");
+		addLibrary("Win64", "yaml-cpp.lib");
 
 		PublicDelayLoadDLLs.Add("yaml-cpp.dll");
-
 		addDependency("Win64", "yaml-cpp.dll");
 		
 		bEnableExceptions = true;
+	}
+	
+	private void addLibrary(string arch, string lib) {
+		PublicAdditionalLibraries.Add(Path.Combine(yamlcppPath, "lib/", arch, lib));
 	}
 	
 	private void addDependency(string arch, string lib) {

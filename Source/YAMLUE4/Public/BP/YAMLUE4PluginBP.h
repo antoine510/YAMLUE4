@@ -1,7 +1,5 @@
 #pragma once
 
-#include "Kismet/BlueprintFunctionLibrary.h"
-
 #include "YAMLUE4Plugin.h"
 #include "YAMLUE4Utils.h"
 
@@ -27,54 +25,13 @@ public:
 	}
 
 	UFUNCTION(BlueprintCallable, Category = "YAML")
-		static void LoadDocument(const FString& path, UYAMLNode*& root) {
-		root = NewObject<UYAMLNode>();
-		FString fileContent;
-		FFileHelper::LoadFileToString(fileContent, *FPaths::Combine(FPaths::ProjectContentDir(), path));
-		try {
-			root->_node = new YAML::Node(YAML::Load(TCHAR_TO_UTF8(*fileContent)));
-		} catch(YAML::ParserException& e) {
-			LogMessageOnScreen(e.msg);
-			delete root;
-			root = nullptr;
-		}
-	}
+		static void LoadDocument(const FString& path, UYAMLNode*& root);
 
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast), Category = "YAMLNode|Cast")
-		void GetNode(const FString& name, UYAMLNode*& node) {
-		try {
-			if(!ensure(_node->Type() == YAML::NodeType::Map)) return;
-			std::string stdname = std::string(TCHAR_TO_UTF8(*name));
-			if(!ensure(HasNode(stdname))) return;
-			node = NewObject<UYAMLNode>();
-			node->_node = new YAML::Node((*_node)[stdname]);
-		} catch(YAML::Exception& e) {
-			LogMessageOnScreen(e.msg);
-			delete node;
-			node = nullptr;
-		}
-	}
+		void GetNode(const FString& name, UYAMLNode*& node);
 
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast), Category = "YAMLNode|Cast")
-		bool GetNodeFallback(const FString& name, const FString& fallback, UYAMLNode*& node) {
-		try {
-			if(!ensure(_node->Type() == YAML::NodeType::Map)) return false;
-			node = NewObject<UYAMLNode>();
-			std::string stdname = std::string(TCHAR_TO_UTF8(*name));
-			if(!HasNode(stdname)) {
-				node->_node = new YAML::Node(YAML::Load(std::string(TCHAR_TO_UTF8(*fallback))));
-				return false;
-			} else {
-				node->_node = new YAML::Node((*_node)[stdname]);
-				return true;
-			}
-		} catch(YAML::Exception& e) {
-			LogMessageOnScreen(e.msg);
-			delete node;
-			node = nullptr;
-			return false;
-		}
-	}
+		bool GetNodeFallback(const FString& name, const FString& fallback, UYAMLNode*& node);
 
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "Has", Keywords = "check has", BlueprintAutocast), Category = "YAMLNode|Check")
 		bool HasNode(const FString& name) {
@@ -82,22 +39,7 @@ public:
 	}
 
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast), Category = "YAMLNode|Cast")
-		void GetNodeArray(const FString& name, TArray<UYAMLNode*>& nodeArray) {
-		try {
-			if(!ensure(_node->Type() == YAML::NodeType::Map)) return;
-			std::string stdname = std::string(TCHAR_TO_UTF8(*name));
-			if(!ensure(HasNode(stdname))) return;
-			if((*_node)[stdname].Type() == YAML::NodeType::Null) return;
-			for(const YAML::Node& n : (*_node)[stdname]) {
-				auto idx = nodeArray.Add(NewObject<UYAMLNode>());
-				nodeArray[idx]->_node = new YAML::Node(n);
-			}
-		} catch(YAML::Exception& e) {
-			LogMessageOnScreen(e.msg);
-			for(UYAMLNode* n : nodeArray) delete n;
-			nodeArray.Empty();
-		}
-	}
+		void GetNodeArray(const FString& name, TArray<UYAMLNode*>& nodeArray);
 
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast), Category = "YAMLNode|Cast")
 		int AsInt() { return _convert<int>(); }
@@ -110,6 +52,9 @@ public:
 
 	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast), Category = "YAMLNode|Cast")
 		FString AsString() { return UTF8_TO_TCHAR(_convert<std::string>().c_str()); }
+
+	UFUNCTION(BlueprintPure, meta = (CompactNodeTitle = "->", Keywords = "cast convert", BlueprintAutocast), Category = "YAMLNode|Cast")
+		void AsStringArray(TArray<FString>& strings);
 
 
 	bool IsValid() const { return _node != nullptr && _node->Type() != YAML::NodeType::Null; }
@@ -135,18 +80,7 @@ private:
 		}
 	}
 
-	bool HasNode(const std::string& name) {
-		try {
-			if(!ensure(_node->Type() == YAML::NodeType::Map)) return false;
-			for(auto sub : *_node) {
-				if(sub.first.Type() == YAML::NodeType::Scalar && sub.first.Scalar() == name) return true;
-			}
-			return false;
-		} catch(YAML::Exception& e) {
-			LogMessageOnScreen(e.msg);
-			return false;
-		}
-	}
+	bool HasNode(const std::string& name);
 
 	YAML::Node* _node = nullptr;
 };

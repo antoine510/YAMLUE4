@@ -1,5 +1,7 @@
 #pragma once
 
+#include <Modules/ModuleInterface.h>
+
 class YAMLUE4Module : public IModuleInterface {
 public:
 	virtual void StartupModule() override;
